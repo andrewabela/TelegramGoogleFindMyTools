@@ -3,12 +3,14 @@
 This repository includes some useful tools that reimplement parts of Google's Find My Device Network. Note that the code of this repo is still very experimental.
 
 ### What's possible?
-Currently, it is possible to query Find My Device trackers and Android devices, read out their E2EE keys, and decrypt encrypted locations sent from the Find My Device network. You can also send register your own ESP32- or Zephyr-based trackers, as described below.
+Currently, it is possible to query Find My Device trackers and Android devices, read out their E2EE keys, and decrypt encrypted locations sent from the Find My Device network through a Telegram bot. You can also send register your own ESP32- or Zephyr-based trackers, as described below.
 
 ### How to use
 - All packages in requirements.txt need to be installed: `pip install -r requirements.txt`
 - The latest version of Google Chrome needs to be installed on your system.
-- You can try out this code by running [main.py](main.py): `python main.py`
+- Copy the file ".env.example" to ".env" and fill in telegram_api_key.
+- Run [Telegram/get_chat_id.py](Telegram/get_chat_id.py) to get the chat ID of the Telegram chat you want to use and add it to the .env file.
+- You can try out this code by running [main.py](main.py): `python main.py` or `docker compose up`
 
 ### Known Issues
 - There seem to be issues with the package "undetected-chromedriver" not detecting Chrome on Windows and ARM Linux. macOS is working fine.

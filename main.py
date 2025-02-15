@@ -2,6 +2,7 @@
 #  GoogleFindMyTools - A set of tools to interact with the Google Find My API
 #  Copyright © 2024 Leon Böttger. All rights reserved.
 #
+import time
 from NovaApi.ListDevices.nbe_list_devices import list_devices
 from Telegram.server import TelegramServer
 
@@ -12,8 +13,9 @@ if __name__ == '__main__':
 
     while True:
         try:
-            telegram_server.get_message(fast=False)# start waiting until a new message is received
-            list_devices(telegram_server=telegram_server)
+            if(telegram_server.get_message(fast=False)):# start waiting until a new message is received
+                list_devices(telegram_server=telegram_server)
+            time.sleep(2)
         except KeyboardInterrupt:
             break
         except Exception as e:

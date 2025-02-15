@@ -42,9 +42,8 @@ class TelegramServer:
             return last_result["text"]
         else:
             time.sleep(0.5)
-            if not fast:
-                time.sleep(2)
-            return self.get_message() # recursive call to recheck for new messages
+            if fast:
+                return self.get_message() # recursive call to recheck for new messages
     
 
 # ts = TelegramServer()
