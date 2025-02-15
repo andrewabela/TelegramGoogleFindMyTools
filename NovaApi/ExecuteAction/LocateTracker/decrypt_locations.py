@@ -35,7 +35,7 @@ def retrieve_identity_key(device_registration: DeviceRegistration) -> bytes:
     return identity_key
 
 
-def decrypt_location_response_locations(device_update_protobuf):
+def decrypt_location_response_locations(device_update_protobuf, telegram_server):
 
     device_registration = device_update_protobuf.deviceMetadata.information.deviceRegistration
 
@@ -59,7 +59,7 @@ def decrypt_location_response_locations(device_update_protobuf):
     for loc, time in zip(network_locations, network_locations_time):
 
         if loc.status == Common_pb2.Status.SEMANTIC:
-            print("Semantic Location Report")
+            telegram_server.send_message("Semantic Location Report")
 
             wrapped_location = WrappedLocation(
                 decrypted_location=b'',
@@ -92,18 +92,18 @@ def decrypt_location_response_locations(device_update_protobuf):
             )
             location_time_array.append(wrapped_location)
 
-    print("-" * 40)
-    print("[DecryptLocations] Decrypted Locations:")
+    telegram_server.send_message("-" * 40)
+    telegram_server.send_message("[DecryptLocations] Decrypted Locations:")
 
     if not location_time_array:
-        print("No locations found.")
+        telegram_server.send_message("No locations found.")
         return
 
     for loc in location_time_array:
+        msg_parts = []
 
         if loc.status == Common_pb2.Status.SEMANTIC:
-            print(f"Semantic Location: {loc.name}")
-
+            msg_parts.append(f"Semantic Location: {loc.name}")
         else:
             proto_loc = DeviceUpdate_pb2.Location()
             proto_loc.ParseFromString(loc.decrypted_location)
@@ -112,16 +112,29 @@ def decrypt_location_response_locations(device_update_protobuf):
             longitude = proto_loc.longitude / 1e7
             altitude = proto_loc.altitude
 
-            print(f"Latitude: {latitude}")
-            print(f"Longitude: {longitude}")
-            print(f"Altitude: {altitude}")
+            msg_parts.append(f"Latitude: {latitude}")
+            msg_parts.append(f"Longitude: {longitude}")
+            msg_parts.append(f"Altitude: {altitude}")
 
-        print(f"Time: {datetime.datetime.fromtimestamp(loc.time).strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"Status: {loc.status}")
-        print(f"Is Own Report: {loc.is_own_report}")
-        print("-" * 40)
+        msg_parts.append(f"Time: {datetime.datetime.fromtimestamp(loc.time).strftime('%Y-%m-%d %H:%M:%S')}")
+        msg_parts.append(f"Status: {loc.status}")
+        msg_parts.append(f"Is Own Report: {loc.is_own_report}")
 
-    pass
+        telegram_server.send_message("\n".join(msg_parts))
+
+    latest_update = location_time_array[0]
+    for loc in location_time_array:
+        if datetime.datetime.fromtimestamp(loc.time) > datetime.datetime.fromtimestamp(latest_update.time):
+            latest_update = loc
+    
+    telegram_server.send_message("The latest update is:")
+    proto_loc = DeviceUpdate_pb2.Location()
+    proto_loc.ParseFromString(latest_update.decrypted_location)
+    latitude = proto_loc.latitude / 1e7
+    longitude = proto_loc.longitude / 1e7
+    altitude = proto_loc.altitude
+    telegram_server.send_message(f"Latest Location: {latest_update.name}\nLatitude: {latitude}\nLongitude: {longitude}\nAltitude: {altitude}\nTime: {datetime.datetime.fromtimestamp(latest_update.time).strftime('%Y-%m-%d %H:%M:%S')}\nStatus: {latest_update.status}\nAccuracy: {latest_update.accuracy}\nIs Own Report: {latest_update.is_own_report}")
+        
 
 
 if __name__ == '__main__':

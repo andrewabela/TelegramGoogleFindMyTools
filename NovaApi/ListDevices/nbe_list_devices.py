@@ -40,8 +40,9 @@ def create_device_list_request():
     return hex_payload
 
 
-def list_devices():
-    print("Loading...")
+def list_devices(telegram_server):
+    telegram_server.send_message("Loading...")
+    
     result_hex = request_device_list()
 
     device_list = parse_device_list_protobuf(result_hex)
@@ -49,26 +50,22 @@ def list_devices():
     refresh_custom_trackers(device_list)
     canonic_ids = get_canonic_ids(device_list)
 
-    print("")
-    print("-" * 50)
-    print("Welcome to GoogleFindMyTools!")
-    print("-" * 50)
-    print("")
-    print("The following trackers are available:")
+    telegram_server.send_message("Welcome to GoogleFindMyTools!")
+    telegram_server.send_message("The following trackers are available:")
 
     for idx, (device_name, canonic_id) in enumerate(canonic_ids, start=1):
-        print(f"{idx}. {device_name}: {canonic_id}")
+        telegram_server.send_message(f"{idx}. {device_name}: {canonic_id}")
 
-    selected_value = input("\nIf you want to see locations of a tracker, type the number of the tracker and press 'Enter'.\nIf you want to register a new ESP32- or Zephyr-based tracker, type 'r' and press 'Enter': ")
+    telegram_server.send_message("\nSend the number of the tracker you want to see location of:")
+    selected_value = telegram_server.get_message()
 
-    if selected_value == 'r':
-        print("Loading...")
-        register_esp32()
-    else:
+    if int(selected_value) in range(1, len(canonic_ids) + 1):
         selected_idx = int(selected_value) - 1
         selected_canonic_id = canonic_ids[selected_idx][1]
-
-        get_location_data_for_device(selected_canonic_id)
+        
+        get_location_data_for_device(selected_canonic_id, telegram_server)
+    else:
+        telegram_server.send_message("Invalid input.")
 
 
 if __name__ == '__main__':

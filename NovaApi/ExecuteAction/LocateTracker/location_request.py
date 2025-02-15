@@ -29,9 +29,9 @@ def create_location_request(canonic_device_id, fcm_registration_id, request_uuid
     return hex_payload
 
 
-def get_location_data_for_device(canonic_device_id):
+def get_location_data_for_device(canonic_device_id, telegram_server):
 
-    print("[LocationRequest] Requesting location data for device with canonic ID:", canonic_device_id)
+    telegram_server.send_message(f"[LocationRequest] Requesting location data for device with canonic ID:, {canonic_device_id}")
 
     result = None
     request_uuid = generate_random_uuid()
@@ -41,11 +41,11 @@ def get_location_data_for_device(canonic_device_id):
         device_update = parse_device_update_protobuf(response)
 
         if device_update.fcmMetadata.requestUuid == request_uuid:
-            print("[LocationRequest] Location request successful.")
-            result = parse_device_update_protobuf(response)
+            telegram_server.send_message("[LocationRequest] Location request successful.")
+            result = parse_device_update_protobuf(response)#TODO: what this ?
             #print_device_update_protobuf(response)
         else:
-            print("[LocationRequest] Received response for a different request. Ignoring.")
+            telegram_server.send_message("[LocationRequest] Received response for a different request. Ignoring.")
 
     fcm_token = FcmReceiver().register_for_location_updates(handle_location_response)
 
@@ -55,7 +55,7 @@ def get_location_data_for_device(canonic_device_id):
     while result is None:
         asyncio.get_event_loop().run_until_complete(asyncio.sleep(1))
 
-    decrypt_location_response_locations(result)
+    decrypt_location_response_locations(result, telegram_server)
 
 if __name__ == '__main__':
     get_location_data_for_device(get_example_data("sample_canonic_device_id"))
