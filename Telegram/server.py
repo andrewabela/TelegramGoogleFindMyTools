@@ -10,20 +10,22 @@ class TelegramServer:
         if not self.token:
             raise ValueError("Missing telegram_api_key environment variable")
         self.chat_id = os.environ.get("authorized_telegram_chat_id")
+        self.debug = os.environ.get("debug") == "True"
         self.url = f"https://api.telegram.org/bot{self.token}"
         self.last_message_time_stamp = time.time() # used to ony check for new messages received after the lest message was sent
         self.last_msg_id = 0
         self.last_message_id = ""
 
-    def send_message(self, message: str):
-        url = f"{self.url}/sendMessage"
-        body = {
-            "chat_id": self.chat_id,
-            "text": message
-        }
-        response = requests.post(url, json=body)
-        # print(response.text)
-        self.last_message_time_stamp = time.time()
+    def send_message(self, message: str, required=True):
+        if (required or self.debug):
+            url = f"{self.url}/sendMessage"
+            body = {
+                "chat_id": self.chat_id,
+                "text": message
+            }
+            response = requests.post(url, json=body)
+            # print(response.text)
+            self.last_message_time_stamp = time.time()
         
     def get_message(self, fast=True):
         url = f"{self.url}/getUpdates"

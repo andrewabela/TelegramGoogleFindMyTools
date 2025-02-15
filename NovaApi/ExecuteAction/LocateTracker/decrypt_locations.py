@@ -5,6 +5,7 @@
 
 import datetime
 import hashlib
+import os
 
 from FMDNCrypto.foreign_tracker_cryptor import decrypt
 from KeyBackup.cloud_key_decryptor import decrypt_eik, decrypt_aes_gcm
@@ -92,49 +93,50 @@ def decrypt_location_response_locations(device_update_protobuf, telegram_server)
             )
             location_time_array.append(wrapped_location)
 
-    telegram_server.send_message("-" * 40)
-    telegram_server.send_message("[DecryptLocations] Decrypted Locations:")
+    telegram_server.send_message("[DecryptLocations] Decrypted Locations:", required=False)
 
     if not location_time_array:
         telegram_server.send_message("No locations found.")
         return
 
-    for loc in location_time_array:
-        msg_parts = []
+    if (os.environ.get("debug") == "True"):
+        for loc in location_time_array:
+            msg_parts = []
 
-        if loc.status == Common_pb2.Status.SEMANTIC:
-            msg_parts.append(f"Semantic Location: {loc.name}")
-        else:
-            proto_loc = DeviceUpdate_pb2.Location()
-            proto_loc.ParseFromString(loc.decrypted_location)
+            if loc.status == Common_pb2.Status.SEMANTIC:
+                msg_parts.append(f"Semantic Location: {loc.name}")
+            else:
+                proto_loc = DeviceUpdate_pb2.Location()
+                proto_loc.ParseFromString(loc.decrypted_location)
 
-            latitude = proto_loc.latitude / 1e7
-            longitude = proto_loc.longitude / 1e7
-            altitude = proto_loc.altitude
+                latitude = proto_loc.latitude / 1e7
+                longitude = proto_loc.longitude / 1e7
+                altitude = proto_loc.altitude
 
-            msg_parts.append(f"Latitude: {latitude}")
-            msg_parts.append(f"Longitude: {longitude}")
-            msg_parts.append(f"Altitude: {altitude}")
+                msg_parts.append(f"Latitude: {latitude}")
+                msg_parts.append(f"Longitude: {longitude}")
+                msg_parts.append(f"Altitude: {altitude}")
 
-        msg_parts.append(f"Time: {datetime.datetime.fromtimestamp(loc.time).strftime('%Y-%m-%d %H:%M:%S')}")
-        msg_parts.append(f"Status: {loc.status}")
-        msg_parts.append(f"Is Own Report: {loc.is_own_report}")
+            msg_parts.append(f"Time: {datetime.datetime.fromtimestamp(loc.time).strftime('%Y-%m-%d %H:%M:%S')}")
+            msg_parts.append(f"Status: {loc.status}")
+            msg_parts.append(f"Is Own Report: {loc.is_own_report}")
 
-        telegram_server.send_message("\n".join(msg_parts))
+            telegram_server.send_message("\n".join(msg_parts))# required=False flag is't required here as this code will only run in debug mode
 
     latest_update = location_time_array[0]
     for loc in location_time_array:
         if datetime.datetime.fromtimestamp(loc.time) > datetime.datetime.fromtimestamp(latest_update.time):
             latest_update = loc
     
-    telegram_server.send_message("The latest update is:")
+    telegram_server.send_message("The latest update is:", required=False)
     proto_loc = DeviceUpdate_pb2.Location()
     proto_loc.ParseFromString(latest_update.decrypted_location)
     latitude = proto_loc.latitude / 1e7
     longitude = proto_loc.longitude / 1e7
     altitude = proto_loc.altitude
+    telegram_server.send_message(f"https://www.google.com/maps/place/{latitude},{longitude}")
     telegram_server.send_message(f"Latest Location: {latest_update.name}\nLatitude: {latitude}\nLongitude: {longitude}\nAltitude: {altitude}\nTime: {datetime.datetime.fromtimestamp(latest_update.time).strftime('%Y-%m-%d %H:%M:%S')}\nStatus: {latest_update.status}\nAccuracy: {latest_update.accuracy}\nIs Own Report: {latest_update.is_own_report}")
-        
+    telegram_server.send_message("Send any message to recheck for location updates")
 
 
 if __name__ == '__main__':

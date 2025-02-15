@@ -50,7 +50,7 @@ def list_devices(telegram_server):
     refresh_custom_trackers(device_list)
     canonic_ids = get_canonic_ids(device_list)
 
-    telegram_server.send_message("Welcome to GoogleFindMyTools!")
+    telegram_server.send_message("Welcome to GoogleFindMyTools!", required=False)
     telegram_server.send_message("The following trackers are available:")
 
     for idx, (device_name, canonic_id) in enumerate(canonic_ids, start=1):

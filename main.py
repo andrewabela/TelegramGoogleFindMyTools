@@ -2,15 +2,13 @@
 #  GoogleFindMyTools - A set of tools to interact with the Google Find My API
 #  Copyright © 2024 Leon Böttger. All rights reserved.
 #
-
 from NovaApi.ListDevices.nbe_list_devices import list_devices
 from Telegram.server import TelegramServer
 
 
 if __name__ == '__main__':
-    
     telegram_server = TelegramServer()
-    telegram_server.send_message("Server started")
+    telegram_server.send_message("Server started\nSend any message to get started")
 
     while True:
         try:
