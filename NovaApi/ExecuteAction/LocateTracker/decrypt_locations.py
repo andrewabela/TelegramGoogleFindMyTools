@@ -15,6 +15,7 @@ from ProtoDecoders.DeviceUpdate_pb2 import DeviceRegistration
 from ProtoDecoders.decoder import parse_device_update_protobuf
 from SpotApi.GetEidInfoForE2eeDevices.get_owner_key import get_owner_key
 from SpotApi.CreateBleDevice.create_ble_device import mcu_fast_pair_model_id, flip_bits
+from NovaApi.ExecuteAction.LocateTracker.save_location import save_location
 
 
 # Indicates if the device is a custom microcontroller
@@ -35,7 +36,7 @@ def retrieve_identity_key(device_registration: DeviceRegistration) -> bytes:
     return identity_key
 
 
-def decrypt_location_response_locations(device_update_protobuf):
+def decrypt_location_response_locations(device_update_protobuf, request_name):
 
     device_registration = device_update_protobuf.deviceMetadata.information.deviceRegistration
 
@@ -99,6 +100,7 @@ def decrypt_location_response_locations(device_update_protobuf):
         print("No locations found.")
         return
 
+    latest_update = None
     for loc in location_time_array:
 
         if loc.status == Common_pb2.Status.SEMANTIC:
@@ -120,6 +122,9 @@ def decrypt_location_response_locations(device_update_protobuf):
         print(f"Status: {loc.status}")
         print(f"Is Own Report: {loc.is_own_report}")
         print("-" * 40)
+        if latest_update is None or loc.time > latest_update.time:
+            latest_update = loc
+    save_location(loc, request_name)
 
     pass
 

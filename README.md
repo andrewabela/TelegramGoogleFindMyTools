@@ -3,7 +3,7 @@
 This repository includes some useful tools that reimplement parts of Google's Find My Device Network. Note that the code of this repo is still very experimental.
 
 ### What's possible?
-Currently, it is possible to query Find My Device trackers and Android devices, read out their E2EE keys, and decrypt encrypted locations sent from the Find My Device network. You can also send register your own ESP32- or Zephyr-based trackers, as described below.
+Currently, it is possible to query Find My Device trackers and Android devices, read out their E2EE keys, and decrypt encrypted locations sent from the Find My Device network these locations are saved to a CSV file updated every 5 to 10 minutes in tracker is connected to the network. A website like [www.gpsvisualizer.com](https://www.gpsvisualizer.com/) can be used to convert the CSV file to a map. You can also send register your own ESP32- or Zephyr-based trackers, as described below.
 
 ### How to use
 - All packages in requirements.txt need to be installed: `pip install -r requirements.txt`
