@@ -57,7 +57,7 @@ def list_devices(telegram_server):
         telegram_server.send_message(f"{idx}. {device_name}: {canonic_id}")
 
     telegram_server.send_message("\nSend the number of the tracker you want to see location of:")
-    selected_value = telegram_server.get_message()
+    selected_value = telegram_server.get_message(expectInt=True)
 
     if int(selected_value) in range(1, len(canonic_ids) + 1):
         selected_idx = int(selected_value) - 1
